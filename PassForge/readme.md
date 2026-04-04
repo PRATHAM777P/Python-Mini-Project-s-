@@ -1,9 +1,9 @@
 
 ```
-# 🔐 PassForge Pro – Advanced Password Generator
+# 🔐 PassForge – Advanced Password Generator
 
 ## 📌 Project Overview
-**PassForge Pro** is a Python-based password generator with a **graphical user interface (GUI)** using **Tkinter**.  
+**PassForge** is a Python-based password generator with a **graphical user interface (GUI)** using **Tkinter**.  
 It helps users create **strong, secure, and random passwords** with customizable options and added usability features.
 
 This tool is ideal for anyone who wants to improve their password security quickly and easily.
