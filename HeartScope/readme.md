@@ -2,6 +2,7 @@
 
 **HeartScope** is an interactive **Streamlit web application** for predicting the risk of heart disease using machine learning models. The app leverages **Logistic Regression** and **Random Forest** classifiers along with extended health features to provide an accurate and user-friendly heart health assessment.
 
+
 ---
 
 ## 🧠 Features
