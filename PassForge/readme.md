@@ -1,5 +1,3 @@
-
-```
 # 🔐 PassForge – Advanced Password Generator
 
 ## 📌 Project Overview
