@@ -61,19 +61,6 @@ streamlit run app.py
 
 ---
 
-## 📊 Screenshots
-
-**Input Form:**
-
-![Input Form](screenshots/input_form.png)
-
-**Prediction & Risk Gauges:**
-
-![Risk Gauges](screenshots/risk_gauges.png)
-
-*(Add screenshots from your running app)*
-
----
 
 ## 🧩 How it Works
 
