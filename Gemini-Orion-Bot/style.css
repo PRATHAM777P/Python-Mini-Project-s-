@@ -1,0 +1,133 @@
+/* General Styling */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f8;
+    color: #222;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode */
+body.dark {
+    background-color: #1e1e2f;
+    color: #f4f6f8;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.suggestions {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.suggestions-item {
+    background: #fff;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.suggestions-item:hover {
+    background: #e0e0e0;
+    transform: scale(1.02);
+}
+
+body.dark .suggestions-item {
+    background: #2a2a3f;
+}
+
+body.dark .suggestions-item:hover {
+    background: #3a3a5a;
+}
+
+.chat-container {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fff;
+}
+
+body.dark .chat-container {
+    background: #2a2a3f;
+    border-color: #555;
+}
+
+.chat-messages {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.chat-messages li {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 80%;
+}
+
+.chat-messages li.user {
+    background: #007bff;
+    color: #fff;
+    margin-left: auto;
+}
+
+.chat-messages li.bot {
+    background: #e0e0e0;
+}
+
+body.dark .chat-messages li.bot {
+    background: #3a3a5a;
+}
+
+.prompt-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.prompt-form {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+}
+
+.prompt-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+body.dark .prompt-input {
+    background: #3a3a5a;
+    border-color: #555;
+    color: #fff;
+}
+
+.material-symbols-rounded {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.extra-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
