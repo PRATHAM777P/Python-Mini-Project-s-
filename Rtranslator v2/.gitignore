@@ -1,0 +1,66 @@
+# ════════════════════════════════════════
+# RTranslator .gitignore
+# NEVER commit API keys or local secrets
+# ════════════════════════════════════════
+
+# API Keys & Secrets — CRITICAL
+*.key
+*.secret
+.env
+.env.*
+secrets.json
+config.local.*
+
+# Any HTML file with embedded keys (backup before editing)
+*-with-key.html
+*-local.html
+*-dev.html
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# Node (if you ever add a build step)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+out/
+
+# Logs
+*.log
+logs/
+
+# Temp files
+*.tmp
+*.bak
+*.orig
+
+# Test artifacts
+coverage/
+.nyc_output/
+
+# Local config overrides
+*.local
+
+# Browser localStorage exports (may contain API keys)
+localStorage-export*.json
