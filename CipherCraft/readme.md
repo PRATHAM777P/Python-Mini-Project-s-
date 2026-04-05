@@ -58,7 +58,7 @@ CipherCraft Pro is a **Flask-based web application** that provides secure text a
 ## 🏗 Project Structure
 
 ```
-CipherCraft/
+CipherCraft-Pro/
 │
 ├── app.py                  # Main Flask application (backend)
 ├── requirements.txt        # Dependencies for Flask app
