@@ -1,1 +1,6 @@
-
+flask
+cryptography
+bcrypt
+pillow
+gunicorn
+werkzeug
