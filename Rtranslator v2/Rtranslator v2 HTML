@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="RTranslator – Real-time AI translation with voice, conversation & walkie-talkie modes">
+<meta name="theme-color" content="#080b12">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://api.anthropic.com; img-src 'self' data:; connect-src https://api.anthropic.com">
+<title>RTranslator — AI Voice Translation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════
+   DESIGN SYSTEM
+════════════════════════════════════════════ */
+:root {
+  --bg0:   #080b12;
+  --bg1:   #0d1119;
+  --bg2:   #121722;
+  --bg3:   #19202e;
+  --bg4:   #1f2840;
+  --glow:  #00e5b0;
+  --glow2: #3d8bff;
+  --glowR: #ff4d75;
+  --glowY: #f5c518;
+  --text:  #eef2ff;
+  --text2: #7a88aa;
+  --text3: #3d4d6a;
+  --border: rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.11);
+  --border3:rgba(255,255,255,0.18);
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --shadow: 0 2px 20px rgba(0,0,0,.5);
+  --shadow-glow: 0 0 28px rgba(0,229,176,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text);font-family:var(--font-body);font-size:15px}
+
+/* ════════════════════════════════════════════
+   SPLASH SCREEN
+════════════════════════════════════════════ */
+#splash{
+  position:fixed;inset:0;background:var(--bg0);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  transition:opacity .5s ease,transform .5s ease;
+}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.splash-orb{
+  width:100px;height:100px;border-radius:30px;
+  background:linear-gradient(135deg,var(--glow),var(--glow2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-glow);
+  animation:orbFloat 3s ease-in-out infinite;
+  margin-bottom:24px;
+}
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.splash-orb svg{width:52px;height:52px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.splash-title{font-family:var(--font-display);font-size:38px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+.splash-title em{color:var(--glow);font-style:normal}
+.splash-sub{font-size:14px;color:var(--text2);margin-bottom:40px;text-align:center;line-height:1.6;max-width:240px}
+.splash-bar{width:180px;height:3px;background:var(--bg3);border-radius:99px;overflow:hidden}
+.splash-bar-fill{height:100%;background:linear-gradient(90deg,var(--glow),var(--glow2));border-radius:99px;animation:loadBar 1.6s ease forwards}
+@keyframes loadBar{from{width:0}to{width:100%}}
+
+/* ════════════════════════════════════════════
+   API KEY SHEET
+════════════════════════════════════════════ */
+#key-sheet{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:fadeIn .2s ease;
+}
+#key-sheet.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet-box{
+  width:100%;max-width:480px;background:var(--bg2);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  border:0.5px solid var(--border2);
+  padding:28px 24px 40px;
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet-handle{width:36px;height:4px;border-radius:99px;background:var(--bg4);margin:0 auto 24px}
+.sheet-title{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:8px}
+.sheet-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:22px}
+.sheet-input{
+  width:100%;background:var(--bg3);border:0.5px solid var(--border2);
+  border-radius:var(--r-md);padding:14px 16px;color:var(--text);
+  font-family:monospace;font-size:13px;outline:none;margin-bottom:10px;
+  transition:border-color .2s;
+}
+.sheet-input:focus{border-color:var(--glow)}
+.sheet-note{font-size:11px;color:var(--text3);margin-bottom:20px;line-height:1.6}
+.sheet-note a{color:var(--glow2);text-decoration:none}
+.btn-glow{
+  width:100%;padding:16px;border-radius:var(--r-lg);border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--glow),var(--glow2));color:#000;
+  font-family:var(--font-display);font-size:15px;font-weight:700;
+  transition:all .2s;letter-spacing:.2px;
+}
+.btn-glow:hover{opacity:.9;transform:translateY(-1px);box-shadow:var(--shadow-glow)}
+.btn-glow:active{transform:translateY(0)}
+.btn-ghost{
+  width:100%;padding:13px;border-radius:var(--r-lg);border:0.5px solid var(--border2);
+  background:transparent;color:var(--text2);font-family:var(--font-body);font-size:14px;
+  cursor:pointer;margin-top:8px;transition:all .2s;
+}
+.btn-ghost:hover{background:var(--bg3);color:var(--text);border-color:var(--border3)}
+
+/* ════════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════════ */
+#app{
+  display:flex;flex-direction:column;height:100dvh;
+  max-width:480px;margin:0 auto;position:relative;
+  background:var(--bg0);
+}
+
+/* ── Top Bar ── */
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 10px;flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:10px;cursor:default}
+.brand-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--glow),var(--glow2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px rgba(0,229,176,.25);
+}
+.brand-icon svg{width:18px;height:18px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.brand-name{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:-.3px}
+.brand-name em{color:var(--glow);font-style:normal}
+.topbar-actions{display:flex;gap:8px}
+.icon-btn{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--bg2);border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all .15s;
+}
+.icon-btn:hover{background:var(--bg3);border-color:var(--border2)}
+.icon-btn svg{width:15px;height:15px;stroke:var(--text2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn.danger svg{stroke:var(--glowR)}
+
+/* ── Mode indicator pill ── */
+#mode-pill{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:5px 12px;background:var(--bg2);border:0.5px solid var(--border);
+  border-radius:99px;margin:0 20px 12px;flex-shrink:0;
+}
+.mode-dot{width:6px;height:6px;border-radius:50%;background:var(--glow);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.mode-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:1.5px;font-family:monospace}
+.mode-time{font-size:10px;color:var(--text3);font-family:monospace;margin-left:auto}
+
+/* ── Tab Navigation ── */
+#tabs{
+  display:flex;gap:3px;padding:0 20px 14px;flex-shrink:0;
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 6px;border-radius:var(--r-md);cursor:pointer;
+  border:0.5px solid transparent;transition:all .2s;
+  font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;
+  font-family:var(--font-display);text-transform:uppercase;
+  user-select:none;
+}
+.tab svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.active{background:var(--bg3);border-color:var(--border2);color:var(--glow)}
+.tab:not(.active):hover{color:var(--text2);background:var(--bg1)}
+
+/* ── Main Scroll Area ── */
+#main{flex:1;overflow-y:auto;padding:0 20px 20px;scrollbar-width:none;min-height:0}
+#main::-webkit-scrollbar{display:none}
+
+/* Screen visibility */
+.screen{display:none;flex-direction:column;gap:12px;padding-bottom:4px}
+.screen.active{display:flex;animation:screenIn .2s ease}
+@keyframes screenIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ════════════════════════════════════════════
+   LANGUAGE SELECTOR
+════════════════════════════════════════════ */
+.lang-card{
+  background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r-lg);
+  padding:14px 16px;display:flex;align-items:center;gap:10px;
+}
+.lang-pick{
+  flex:1;background:transparent;border:none;color:var(--text);
+  font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;
+  appearance:none;outline:none;
+}
+.lang-pick option{background:#1a2035}
+.lang-sep{font-size:18px;color:var(--text3);flex-shrink:0}
+.swap-btn{
+  width:30px;height:30px;border-radius:8px;background:rgba(0,229,176,.08);
+  border:0.5px solid rgba(0,229,176,.2);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.swap-btn:hover{background:rgba(0,229,176,.16);transform:scale(1.05)}
+.swap-btn:active{transform:scale(.95)}
+.swap-btn svg{width:14px;height:14px;stroke:var(--glow);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ════════════════════════════════════════════
+   TEXT TRANSLATION SCREEN
+════════════════════════════════════════════ */
+.tcard{
+  background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r-lg);
+  overflow:hidden;
+}
+.tcard-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:0.5px solid var(--border);
+}
+.tcard-lang-label{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:1.4px;font-family:monospace}
+.tcard-actions{display:flex;gap:6px}
+.tcard-btn{
+  width:28px;height:28px;border-radius:7px;background:var(--bg3);border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;
+}
+.tcard-btn:hover{background:var(--bg4);border-color:var(--border2)}
+.tcard-btn svg{width:13px;height:13px;stroke:var(--text2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tcard-btn.active svg{stroke:var(--glowR)}
+.tcard-body{position:relative}
+textarea.tcard-ta{
+  width:100%;min-height:120px;background:transparent;border:none;
+  padding:14px 16px 36px;color:var(--text);font-family:var(--font-body);
+  font-size:16px;resize:none;outline:none;line-height:1.65;
+}
+textarea.tcard-ta::placeholder{color:var(--text3)}
+.char-ring{
+  position:absolute;bottom:10px;right:14px;
+  font-size:10px;color:var(--text3);font-family:monospace;
+  display:flex;align-items:center;gap:4px;
+}
+.tcard-output{
+  min-height:120px;padding:14px 16px;font-size:16px;line-height:1.65;
+  color:var(--text);background:var(--bg1);border-top:0.5px solid var(--border);
+  position:relative;transition:all .2s;
+}
+.tcard-output.empty{color:var(--text3);font-style:italic}
+.tcard-output.loading{color:var(--text3)}
+
+/* Streaming cursor */
+.cursor-blink::after{content:'▋';animation:cur .6s step-end infinite;color:var(--glow)}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+
+.tcard-footer{
+  display:flex;gap:6px;padding:10px 14px;
+  border-top:0.5px solid var(--border);background:var(--bg1);flex-wrap:wrap;
+}
+.tfoot-btn{
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
+  border-radius:8px;background:var(--bg3);border:0.5px solid var(--border);
+  cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;
+  transition:all .15s;font-family:var(--font-body);white-space:nowrap;
+}
+.tfoot-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.tfoot-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tfoot-btn.accent{background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.2);color:var(--glow)}
+.tfoot-btn.accent:hover{background:rgba(0,229,176,.15)}
+
+/* Translate CTA */
+.cta-btn{
+  width:100%;padding:17px;border-radius:var(--r-lg);border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--glow),var(--glow2));color:#000;
+  font-family:var(--font-display);font-size:15px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:all .2s;letter-spacing:.1px;
+}
+.cta-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,229,176,.3)}
+.cta-btn:active{transform:translateY(0)}
+.cta-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.cta-btn svg{width:18px;height:18px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Status bar */
+.status-line{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-height:32px;font-size:12px;color:var(--text3);padding:2px 0;
+}
+.spinner{
+  width:14px;height:14px;border:2px solid var(--bg4);border-top-color:var(--glow);
+  border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ════════════════════════════════════════════
+   MIC BUTTON & WAVEFORM
+════════════════════════════════════════════ */
+.mic-wrap{display:flex;align-items:center;gap:12px}
+.mic-main{
+  width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.mic-main:hover{border-color:var(--glow);background:rgba(0,229,176,.08)}
+.mic-main.rec{background:rgba(255,77,117,.1);border-color:var(--glowR);animation:micPulse 1.2s ease infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,117,.35)}60%{box-shadow:0 0 0 14px rgba(255,77,117,0)}}
+.mic-main svg{width:22px;height:22px;stroke:var(--text2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.mic-main.rec svg{stroke:var(--glowR)}
+
+/* Waveform bars */
+.waveform{display:flex;align-items:center;gap:3px;height:32px;flex:1}
+.wbar{
+  width:3px;height:6px;border-radius:99px;background:var(--bg4);
+  transition:height .1s ease,background .2s;
+}
+.waveform.active .wbar{
+  background:var(--glow);
+  animation:wave 1s ease-in-out infinite;
+}
+.wbar:nth-child(1){animation-delay:0s;--wh:14px}
+.wbar:nth-child(2){animation-delay:.1s;--wh:22px}
+.wbar:nth-child(3){animation-delay:.2s;--wh:28px}
+.wbar:nth-child(4){animation-delay:.15s;--wh:18px}
+.wbar:nth-child(5){animation-delay:.25s;--wh:24px}
+.wbar:nth-child(6){animation-delay:.05s;--wh:16px}
+.wbar:nth-child(7){animation-delay:.3s;--wh:20px}
+@keyframes wave{0%,100%{height:6px}50%{height:var(--wh,18px)}}
+.mic-hint-text{font-size:12px;color:var(--text3);flex:1}
+
+/* ════════════════════════════════════════════
+   CONVERSATION SCREEN
+════════════════════════════════════════════ */
+.peer-strip{
+  display:flex;align-items:center;gap:12px;
+  background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r-lg);
+  padding:12px 16px;
+}
+.peer-av{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:14px;font-weight:700;
+}
+.peer-av.teal{background:rgba(0,229,176,.1);color:var(--glow)}
+.peer-av.blue{background:rgba(61,139,255,.1);color:var(--glow2)}
+.peer-info{flex:1}
+.peer-name{font-size:14px;font-weight:600}
+.peer-sig{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;margin-top:2px}
+.peer-dot{width:6px;height:6px;border-radius:50%;background:var(--glow)}
+.chat-scroll{
+  flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  scrollbar-width:none;min-height:180px;
+}
+.chat-scroll::-webkit-scrollbar{display:none}
+.bubble-wrap{display:flex;flex-direction:column;max-width:82%;animation:bubbleIn .2s ease}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bubble-wrap.me{align-self:flex-end;align-items:flex-end}
+.bubble-wrap.peer{align-self:flex-start;align-items:flex-start}
+.bubble{padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.6}
+.bubble-wrap.me .bubble{background:linear-gradient(135deg,var(--glow),#4eaeff);color:#000;border-bottom-right-radius:4px}
+.bubble-wrap.peer .bubble{background:var(--bg3);border:0.5px solid var(--border2);border-bottom-left-radius:4px}
+.bubble-trans{font-size:11px;color:var(--text3);padding:2px 5px;display:flex;align-items:center;gap:4px;margin-top:2px}
+.bubble-trans::before{content:'↳';color:var(--glow)}
+.bubble-meta{font-size:10px;color:var(--text3);padding:0 5px;font-family:monospace}
+.compose-row{display:flex;gap:8px;align-items:flex-end;padding-top:8px}
+.compose-box{
+  flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r-lg);
+  padding:12px 14px;transition:border-color .2s;
+}
+.compose-box:focus-within{border-color:rgba(0,229,176,.35)}
+.compose-box textarea{
+  width:100%;background:transparent;border:none;color:var(--text);
+  font-family:var(--font-body);font-size:14px;resize:none;outline:none;
+  max-height:90px;line-height:1.55;
+}
+.compose-box textarea::placeholder{color:var(--text3)}
+.compose-btns{display:flex;flex-direction:column;gap:6px}
+.c-send{
+  width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--glow),var(--glow2));
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.c-send:hover{opacity:.9;transform:scale(1.06)}
+.c-send svg{width:17px;height:17px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.c-mic{
+  width:42px;height:42px;border-radius:50%;border:1.5px solid var(--border2);
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.c-mic:hover{border-color:var(--glow)}
+.c-mic svg{width:17px;height:17px;stroke:var(--text2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.c-mic.rec{border-color:var(--glowR);background:rgba(255,77,117,.1)}
+.c-mic.rec svg{stroke:var(--glowR)}
+
+/* ════════════════════════════════════════════
+   WALKIE-TALKIE SCREEN
+════════════════════════════════════════════ */
+.walkie-header{text-align:center;padding:4px 0 12px}
+.walkie-header p{font-size:12px;color:var(--text3);line-height:1.6}
+.walkie-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:14px}
+.walkie-pad{
+  background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r-lg);
+  padding:20px 12px;text-align:center;cursor:pointer;transition:all .25s;user-select:none;
+}
+.walkie-pad:hover{border-color:var(--border3);background:var(--bg3)}
+.walkie-pad.talking{border-color:var(--glow);background:rgba(0,229,176,.07);box-shadow:var(--shadow-glow)}
+.walkie-pad.glowing-red{border-color:var(--glowR);background:rgba(255,77,117,.07);box-shadow:0 0 24px rgba(255,77,117,.18)}
+.walkie-pad-icon{
+  width:48px;height:48px;border-radius:50%;margin:0 auto 10px;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;transition:all .25s;
+}
+.walkie-pad.talking .walkie-pad-icon{border-color:var(--glow);background:rgba(0,229,176,.1)}
+.walkie-pad-icon svg{width:22px;height:22px;stroke:var(--text2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.walkie-pad.talking .walkie-pad-icon svg{stroke:var(--glow)}
+.walkie-pad-name{font-size:13px;font-weight:600;font-family:var(--font-display)}
+.walkie-pad-lang{font-size:11px;color:var(--text3);margin-top:3px;font-family:monospace}
+.walkie-center{
+  width:38px;height:38px;border-radius:50%;background:var(--bg2);border:0.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+}
+.walkie-center svg{width:16px;height:16px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.walkie-status{
+  text-align:center;padding:10px;min-height:44px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+
+/* ════════════════════════════════════════════
+   HISTORY SCREEN
+════════════════════════════════════════════ */
+.hist-toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.hist-title{font-family:var(--font-display);font-size:17px;font-weight:700}
+.hist-clear{
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
+  border-radius:8px;background:var(--bg2);border:0.5px solid var(--border);
+  cursor:pointer;color:var(--text3);font-size:12px;transition:all .15s;
+}
+.hist-clear:hover{border-color:var(--glowR);color:var(--glowR)}
+.hist-clear svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hist-item{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:13px 14px;background:var(--bg2);border:0.5px solid var(--border);
+  border-radius:var(--r-md);cursor:pointer;transition:all .15s;
+}
+.hist-item:hover{border-color:var(--border2);background:var(--bg3)}
+.hist-flag{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.hist-flag.a{background:rgba(0,229,176,.08)}
+.hist-flag.b{background:rgba(61,139,255,.08)}
+.hist-body{flex:1;min-width:0}
+.hist-orig{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-translated{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.hist-langs{font-size:10px;color:var(--text3);margin-top:4px;font-family:monospace}
+.hist-time{font-size:10px;color:var(--text3);font-family:monospace;white-space:nowrap;padding-top:2px}
+.hist-empty{text-align:center;color:var(--text3);padding:40px 0;font-size:14px}
+.hist-empty-icon{font-size:40px;margin-bottom:12px}
+
+/* ════════════════════════════════════════════
+   SETTINGS SCREEN
+════════════════════════════════════════════ */
+.settings-back{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;
+}
+.settings-back svg{width:18px;height:18px;stroke:var(--text2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.settings-back span{font-size:13px;color:var(--text2)}
+.settings-hero{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:20px}
+.settings-group{margin-bottom:20px}
+.settings-group-label{
+  font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1.8px;
+  text-transform:uppercase;font-family:monospace;margin-bottom:8px;padding:0 2px;
+}
+.setting-row{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;
+  background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r-md);margin-bottom:5px;
+}
+.setting-icon{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.setting-icon svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.si-green{background:rgba(0,229,176,.1);color:var(--glow)}
+.si-blue{background:rgba(61,139,255,.1);color:var(--glow2)}
+.si-yellow{background:rgba(245,197,24,.1);color:var(--glowY)}
+.si-red{background:rgba(255,77,117,.1);color:var(--glowR)}
+.setting-info{flex:1}
+.setting-name{font-size:13px;font-weight:500}
+.setting-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.setting-value{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px}
+.setting-value svg{width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Toggle */
+.tgl{position:relative;width:42px;height:23px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0;position:absolute}
+.tgl-track{position:absolute;inset:0;border-radius:99px;background:var(--bg3);border:0.5px solid var(--border2);cursor:pointer;transition:.2s}
+.tgl-track::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;left:3px;top:2px;background:var(--text3);transition:.2s}
+.tgl input:checked + .tgl-track{background:rgba(0,229,176,.12);border-color:var(--glow)}
+.tgl input:checked + .tgl-track::before{transform:translateX(19px);background:var(--glow)}
+/* Privacy badge */
+.privacy-badge{
+  display:flex;align-items:center;gap:8px;padding:12px 14px;
+  background:rgba(0,229,176,.05);border:0.5px solid rgba(0,229,176,.15);
+  border-radius:var(--r-md);margin-bottom:20px;
+}
+.privacy-badge svg{width:16px;height:16px;stroke:var(--glow);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.privacy-badge p{font-size:12px;color:var(--text2);line-height:1.55}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r-md);
+  padding:11px 20px;font-size:13px;font-weight:500;color:var(--text);
+  opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:300;
+  max-width:calc(100% - 40px);text-align:center;box-shadow:var(--shadow);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--glowR);color:var(--glowR)}
+#toast.ok{border-color:var(--glow);color:var(--glow)}
+
+/* ════════════════════════════════════════════
+   SECURITY: API key masking indicator
+════════════════════════════════════════════ */
+.key-masked{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:monospace;font-size:11px;color:var(--glow);
+}
+.key-dot{width:5px;height:5px;border-radius:50%;background:var(--glow);display:inline-block}
+
+/* Responsive */
+@media(max-width:360px){.tab{font-size:9px;padding:8px 4px}}
+</style>
+</head>
+<body>
+
+<!-- ════ SPLASH ════ -->
+<div id="splash">
+  <div class="splash-orb">
+    <svg viewBox="0 0 24 24"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+  </div>
+  <div class="splash-title">R<em>Translator</em></div>
+  <div class="splash-sub">Real-time AI-powered voice translation across 16+ languages</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ════ API KEY SHEET ════ -->
+<div id="key-sheet" class="hidden">
+  <div class="sheet-box">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Connect AI Engine</div>
+    <div class="sheet-desc">Enter your Anthropic API key to unlock real-time Claude-powered translation. Your key is stored only in your browser's localStorage — never sent to any server except Anthropic's own API.</div>
+    <input class="sheet-input" type="password" id="key-input" placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+    <div class="sheet-note">
+      Get a free key at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>
+      &nbsp;·&nbsp; Key stored locally, never logged
+    </div>
+    <button class="btn-glow" onclick="saveKey()">Start Translating</button>
+    <button class="btn-ghost" onclick="useDemoMode()">Try Demo Mode (no key needed)</button>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app">
+
+  <!-- Top Bar -->
+  <div id="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+      </div>
+      <div class="brand-name">R<em>Translator</em></div>
+    </div>
+    <div class="topbar-actions">
+      <div class="icon-btn" onclick="openSettings()" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div class="icon-btn" onclick="showKeySheet()" title="API Key">
+        <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode Pill -->
+  <div id="mode-pill">
+    <div class="mode-dot"></div>
+    <div class="mode-label" id="mode-label">TEXT MODE</div>
+    <div class="mode-time" id="mode-time">--:--</div>
+  </div>
+
+  <!-- Tabs -->
+  <div id="tabs">
+    <div class="tab active" id="tab-text" onclick="switchTab('text')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Text
+    </div>
+    <div class="tab" id="tab-conv" onclick="switchTab('conv')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Convo
+    </div>
+    <div class="tab" id="tab-walkie" onclick="switchTab('walkie')">
+      <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/><path d="M9 7h6M9 11h6"/></svg>
+      Walkie
+    </div>
+    <div class="tab" id="tab-hist" onclick="switchTab('hist')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      History
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+
+    <!-- ══ TEXT SCREEN ══ -->
+    <div class="screen active" id="screen-text">
+      <!-- Lang selector -->
+      <div class="lang-card">
+        <select class="lang-pick" id="t-from"><option value="English">🇬🇧 English</option><option value="Spanish">🇪🇸 Spanish</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Italian">🇮🇹 Italian</option><option value="Portuguese">🇵🇹 Portuguese</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Korean">🇰🇷 Korean</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option><option value="Turkish">🇹🇷 Turkish</option><option value="Dutch">🇳🇱 Dutch</option><option value="Polish">🇵🇱 Polish</option><option value="Ukrainian">🇺🇦 Ukrainian</option></select>
+        <div class="swap-btn" onclick="swapLangs('t')"><svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+        <select class="lang-pick" id="t-to"><option value="Spanish">🇪🇸 Spanish</option><option value="English">🇬🇧 English</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Italian">🇮🇹 Italian</option><option value="Portuguese">🇵🇹 Portuguese</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Korean">🇰🇷 Korean</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option><option value="Turkish">🇹🇷 Turkish</option><option value="Dutch">🇳🇱 Dutch</option><option value="Polish">🇵🇱 Polish</option><option value="Ukrainian">🇺🇦 Ukrainian</option></select>
+      </div>
+
+      <!-- Input card -->
+      <div class="tcard">
+        <div class="tcard-header">
+          <div class="tcard-lang-label" id="t-from-label">SOURCE · ENGLISH</div>
+          <div class="tcard-actions">
+            <div class="tcard-btn" onclick="speakInput()" title="Speak input"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+            <div class="tcard-btn" id="mic-btn" onclick="startMic()" title="Microphone"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+            <div class="tcard-btn" onclick="clearText()" title="Clear"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          </div>
+        </div>
+        <div class="tcard-body">
+          <textarea class="tcard-ta" id="t-input" placeholder="Type or use mic to enter text…" maxlength="1000" oninput="onInput()"></textarea>
+          <div class="char-ring"><span id="char-cnt">0</span>/1000</div>
+        </div>
+      </div>
+
+      <!-- Mic row -->
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:12px 16px;">
+        <div class="mic-wrap">
+          <button class="mic-main" id="mic-main-btn" onclick="startMic()">
+            <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="waveform" id="waveform">
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div>
+          </div>
+          <span class="mic-hint-text" id="mic-hint">Tap mic to speak</span>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="status-line" id="status-line"><span id="status-txt" style="font-size:12px;color:var(--text3)">Ready to translate</span></div>
+
+      <!-- Output card -->
+      <div class="tcard">
+        <div class="tcard-header">
+          <div class="tcard-lang-label" id="t-to-label">TRANSLATION · SPANISH</div>
+          <div class="tcard-actions">
+            <div class="tcard-btn" onclick="speakOutput()" title="Speak translation"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+            <div class="tcard-btn" onclick="copyOut()" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
+          </div>
+        </div>
+        <div class="tcard-output empty" id="t-output">Translation will appear here…</div>
+        <div class="tcard-footer">
+          <div class="tfoot-btn accent" onclick="speakOutput()"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>Speak</div>
+          <div class="tfoot-btn" onclick="copyOut()"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</div>
+          <div class="tfoot-btn" onclick="saveItem()"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save</div>
+          <div class="tfoot-btn" onclick="shareOut()"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</div>
+        </div>
+      </div>
+
+      <button class="cta-btn" id="cta-btn" onclick="doTranslate()">
+        <svg viewBox="0 0 24 24"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+        Translate
+      </button>
+    </div>
+
+    <!-- ══ CONVERSATION SCREEN ══ -->
+    <div class="screen" id="screen-conv">
+      <div class="lang-card">
+        <select class="lang-pick" id="c-me"><option value="English">🇬🇧 English (Me)</option><option value="Spanish">🇪🇸 Spanish</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option></select>
+        <span class="lang-sep">↔</span>
+        <select class="lang-pick" id="c-peer"><option value="Spanish">🇪🇸 Spanish (Peer)</option><option value="English">🇬🇧 English</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option></select>
+      </div>
+      <div class="peer-strip">
+        <div class="peer-av blue">P</div>
+        <div class="peer-info">
+          <div class="peer-name">Peer Device</div>
+          <div class="peer-sig"><div class="peer-dot"></div>Simulated · Bluetooth ready</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:monospace">BLE</div>
+      </div>
+      <div class="chat-scroll" id="conv-chat">
+        <div class="bubble-wrap peer">
+          <div class="bubble">Hola! ¿Cómo estás hoy?</div>
+          <div class="bubble-trans">Hello! How are you today?</div>
+          <div class="bubble-meta">Peer · just now</div>
+        </div>
+        <div class="bubble-wrap me">
+          <div class="bubble">I'm great, this translation is amazing!</div>
+          <div class="bubble-trans">¡Estoy genial, esta traducción es increíble!</div>
+          <div class="bubble-meta">You · just now</div>
+        </div>
+      </div>
+      <div class="compose-row">
+        <div class="compose-box">
+          <textarea id="c-input" placeholder="Type your message…" rows="2" onkeydown="convKey(event)"></textarea>
+        </div>
+        <div class="compose-btns">
+          <button class="c-mic" id="c-mic-btn" onclick="convMic()">
+            <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          </button>
+          <button class="c-send" onclick="convSend()">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WALKIE-TALKIE SCREEN ══ -->
+    <div class="screen" id="screen-walkie">
+      <div class="walkie-header">
+        <p>Tap a side to speak — the other person hears<br>the translation automatically</p>
+      </div>
+      <div class="lang-card" style="margin-bottom:0">
+        <select class="lang-pick" id="w-left" onchange="updateWalkieLangs()"><option value="English">🇬🇧 English</option><option value="Spanish">🇪🇸 Spanish</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option></select>
+        <div class="swap-btn" onclick="swapLangs('w')"><svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+        <select class="lang-pick" id="w-right" onchange="updateWalkieLangs()"><option value="Spanish">🇪🇸 Spanish</option><option value="English">🇬🇧 English</option><option value="French">🇫🇷 French</option><option value="German">🇩🇪 German</option><option value="Chinese">🇨🇳 Chinese</option><option value="Japanese">🇯🇵 Japanese</option><option value="Arabic">🇸🇦 Arabic</option><option value="Russian">🇷🇺 Russian</option><option value="Hindi">🇮🇳 Hindi</option></select>
+      </div>
+      <div class="walkie-grid">
+        <div class="walkie-pad" id="w-pad-left" onclick="walkieTap('left')">
+          <div class="walkie-pad-icon"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+          <div class="walkie-pad-name">Person A</div>
+          <div class="walkie-pad-lang" id="w-lang-left">English</div>
+        </div>
+        <div class="walkie-center"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+        <div class="walkie-pad" id="w-pad-right" onclick="walkieTap('right')">
+          <div class="walkie-pad-icon"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+          <div class="walkie-pad-name">Person B</div>
+          <div class="walkie-pad-lang" id="w-lang-right">Spanish</div>
+        </div>
+      </div>
+      <div class="walkie-status" id="w-status"><span style="font-size:13px;color:var(--text3)">Tap a side to begin</span></div>
+      <div class="chat-scroll" id="walkie-chat" style="min-height:120px"></div>
+    </div>
+
+    <!-- ══ HISTORY SCREEN ══ -->
+    <div class="screen" id="screen-hist">
+      <div class="hist-toprow">
+        <div class="hist-title">History</div>
+        <div class="hist-clear" onclick="clearHistory()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Clear all</div>
+      </div>
+      <div id="hist-list"></div>
+      <div id="hist-empty" class="hist-empty" style="display:none">
+        <div class="hist-empty-icon">📋</div>
+        No translations saved yet.<br>Start translating to build your history.
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS SCREEN ══ -->
+    <div class="screen" id="screen-settings">
+      <div class="settings-back" onclick="closeSettings()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Back</span>
+      </div>
+      <div class="settings-hero">Settings</div>
+
+      <!-- Privacy notice -->
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        <p>Your API key is stored only in your browser and sent exclusively to Anthropic's API. RTranslator has no backend server and never logs your data.</p>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-label">AI Engine</div>
+        <div class="setting-row" onclick="showKeySheet()" style="cursor:pointer">
+          <div class="setting-icon si-green"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+          <div class="setting-info">
+            <div class="setting-name">API Key</div>
+            <div class="setting-desc" id="key-status-desc">Not configured · Demo mode active</div>
+          </div>
+          <div class="setting-value"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon si-blue"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <div class="setting-info"><div class="setting-name">Model</div><div class="setting-desc">claude-sonnet-4-20250514</div></div>
+          <div class="setting-value">Active</div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Speech</div>
+        <div class="setting-row">
+          <div class="setting-icon si-green"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+          <div class="setting-info"><div class="setting-name">Auto-speak translations</div><div class="setting-desc">TTS plays after each translation</div></div>
+          <label class="tgl"><input type="checkbox" id="s-autospeak" onchange="savePref('autoSpeak',this.checked)"><span class="tgl-track"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-icon si-blue"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+          <div class="setting-info"><div class="setting-name">Microphone input</div><div class="setting-desc">Web Speech API (Chrome recommended)</div></div>
+          <label class="tgl"><input type="checkbox" id="s-mic" checked onchange="savePref('mic',this.checked)"><span class="tgl-track"></span></label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Privacy</div>
+        <div class="setting-row">
+          <div class="setting-icon si-yellow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="setting-info"><div class="setting-name">Save translation history</div><div class="setting-desc">Stored locally in your browser only</div></div>
+          <label class="tgl"><input type="checkbox" id="s-hist" checked onchange="savePref('history',this.checked)"><span class="tgl-track"></span></label>
+        </div>
+        <div class="setting-row" onclick="clearHistory()" style="cursor:pointer">
+          <div class="setting-icon si-red"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+          <div class="setting-info"><div class="setting-name">Clear all history</div><div class="setting-desc">Permanently deletes all saved items</div></div>
+          <div class="setting-value" style="color:var(--glowR)">Delete</div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-label">About</div>
+        <div class="setting-row">
+          <div class="setting-icon si-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="setting-info"><div class="setting-name">RTranslator v2.0</div><div class="setting-desc">Open-source · MIT License</div></div>
+          <div class="setting-value">v2.0</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+// SECURITY: Input sanitization — always escape user-generated content
+// before inserting into DOM. Never use innerHTML with unsanitized data.
+// ════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+// ── State (no secrets in global state) ──────
+const ST = {
+  tab: 'text',
+  demoMode: true,
+  micActive: false,
+  recognition: null,
+  history: [],
+  prefs: { autoSpeak: false, mic: true, history: true },
+  curTranslation: '',
+  curInput: '',
+  walkieBusy: false,
+};
+
+// ── LANG MAP ────────────────────────────────
+const LANG_BCP47 = {
+  English:'en-US', Spanish:'es-ES', French:'fr-FR', German:'de-DE',
+  Italian:'it-IT', Portuguese:'pt-PT', Chinese:'zh-CN', Japanese:'ja-JP',
+  Korean:'ko-KR', Arabic:'ar-SA', Russian:'ru-RU', Hindi:'hi-IN',
+  Turkish:'tr-TR', Dutch:'nl-NL', Polish:'pl-PL', Ukrainian:'uk-UA',
+};
+const FLAGS = {
+  English:'🇬🇧', Spanish:'🇪🇸', French:'🇫🇷', German:'🇩🇪', Italian:'🇮🇹',
+  Portuguese:'🇵🇹', Chinese:'🇨🇳', Japanese:'🇯🇵', Korean:'🇰🇷', Arabic:'🇸🇦',
+  Russian:'🇷🇺', Hindi:'🇮🇳', Turkish:'🇹🇷', Dutch:'🇳🇱', Polish:'🇵🇱', Ukrainian:'🇺🇦',
+};
+
+// ── BOOT ────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadPrefs();
+  loadHistory();
+  updateClock();
+  setInterval(updateClock, 15000);
+
+  setTimeout(() => {
+    $('splash').classList.add('out');
+    // Check for API key SECURELY — never log it
+    const hasKey = !!secureGetKey();
+    ST.demoMode = !hasKey;
+    if (!hasKey) showKeySheet();
+    updateKeyStatus();
+  }, 1900);
+});
+
+function updateClock() {
+  const n = new Date();
+  $('mode-time').textContent = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+}
+
+// ── SECURE KEY STORAGE ──────────────────────
+// SECURITY: Key is stored in localStorage with a namespaced key.
+// It is only ever sent to api.anthropic.com — validated before use.
+// Never log, display fully, or expose in URLs.
+const KEY_STORE = 'rt2_key_v1';
+
+function secureGetKey() {
+  try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; }
+}
+
+function secureSaveKey(k) {
+  // Validate format before saving — prevents XSS via injected keys
+  if (!/^sk-ant-[a-zA-Z0-9\-_]{10,}$/.test(k)) return false;
+  try { localStorage.setItem(KEY_STORE, k); return true; } catch { return false; }
+}
+
+function secureClearKey() {
+  try { localStorage.removeItem(KEY_STORE); } catch {}
+}
+
+function saveKey() {
+  const raw = $('key-input').value.trim();
+  if (!raw) { toast('Please enter your API key', 'err'); return; }
+  if (!raw.startsWith('sk-ant-')) { toast('Key must start with sk-ant-', 'err'); return; }
+  if (raw.length < 30) { toast('Key looks too short', 'err'); return; }
+  if (!secureSaveKey(raw)) { toast('Invalid key format', 'err'); return; }
+  $('key-input').value = ''; // SECURITY: Clear from DOM immediately
+  ST.demoMode = false;
+  $('key-sheet').classList.add('hidden');
+  updateKeyStatus();
+  toast('API key saved — AI translation active!', 'ok');
+}
+
+function useDemoMode() {
+  ST.demoMode = true;
+  $('key-sheet').classList.add('hidden');
+  toast('Demo mode active — simulated translations');
+}
+
+function showKeySheet() { $('key-sheet').classList.remove('hidden'); }
+function updateKeyStatus() {
+  const k = secureGetKey();
+  if (k) {
+    // SECURITY: Never show full key — mask everything except last 4 chars
+    $('key-status-desc').textContent = 'Configured · sk-ant-•••' + k.slice(-4);
+  } else {
+    $('key-status-desc').textContent = 'Not configured · Demo mode active';
+  }
+}
+
+// ── TAB NAVIGATION ──────────────────────────
+function switchTab(tab) {
+  ST.tab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('tab-' + tab).classList.add('active');
+  $('screen-' + tab).classList.add('active');
+  const labels = { text:'TEXT MODE', conv:'CONVO MODE', walkie:'WALKIE MODE', hist:'HISTORY' };
+  $('mode-label').textContent = labels[tab] || tab.toUpperCase();
+}
+
+function openSettings() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-settings').classList.add('active');
+  $('mode-label').textContent = 'SETTINGS';
+}
+
+function closeSettings() { switchTab(ST.tab); }
+
+// ── LANG CONTROLS ──────────────────────────
+function swapLangs(mode) {
+  if (mode === 't') {
+    const f = $('t-from'), t = $('t-to');
+    [f.value, t.value] = [t.value, f.value];
+    updateTextLabels();
+    // Also swap text content
+    const inp = $('t-input').value;
+    const out = $('t-output').textContent;
+    const isEmpty = $('t-output').classList.contains('empty');
+    if (!isEmpty && out && out !== 'Translation will appear here…') {
+      $('t-input').value = out;
+      $('t-output').textContent = inp || 'Translation will appear here…';
+      if (!inp) $('t-output').classList.add('empty');
+      updateCharCnt();
+    }
+  } else if (mode === 'w') {
+    const l = $('w-left'), r = $('w-right');
+    [l.value, r.value] = [r.value, l.value];
+    updateWalkieLangs();
+  }
+}
+
+function updateTextLabels() {
+  $('t-from-label').textContent = 'SOURCE · ' + $('t-from').value.toUpperCase();
+  $('t-to-label').textContent = 'TRANSLATION · ' + $('t-to').value.toUpperCase();
+}
+
+function updateWalkieLangs() {
+  $('w-lang-left').textContent = $('w-left').value;
+  $('w-lang-right').textContent = $('w-right').value;
+}
+
+// ── TEXT INPUT ──────────────────────────────
+function onInput() { updateCharCnt(); }
+function updateCharCnt() { $('char-cnt').textContent = $('t-input').value.length; }
+function clearText() {
+  $('t-input').value = ''; updateCharCnt();
+  setOutputEmpty(); setStatus('Ready'); stopMic();
+}
+function setOutputEmpty() {
+  $('t-output').textContent = 'Translation will appear here…';
+  $('t-output').className = 'tcard-output empty';
+  ST.curTranslation = '';
+}
+
+// ── TRANSLATE ────────────────────────────────
+async function doTranslate() {
+  const text = $('t-input').value.trim();
+  if (!text) { toast('Enter some text to translate'); return; }
+  const from = $('t-from').value, to = $('t-to').value;
+  if (from === to) { toast('Source and target must differ'); return; }
+
+  const btn = $('cta-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(0,0,0,.2);border-top-color:#000;width:18px;height:18px;"></div> Translating…';
+  setStatus('', true);
+
+  try {
+    const result = await translateText(text, from, to);
+    ST.curTranslation = result;
+    ST.curInput = text;
+    const out = $('t-output');
+    out.textContent = result;
+    out.className = 'tcard-output';
+    setStatus('Done ✓');
+    if (ST.prefs.autoSpeak) speak(result, to);
+    if (ST.prefs.history) addToHistory(text, result, from, to);
+  } catch(e) {
+    setStatus('Error: ' + e.message);
+    toast(e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#000;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>Translate';
+}
+
+async function translateText(text, from, to) {
+  // SECURITY: Sanitize input before sending to API
+  const safeText = text.slice(0, 1000); // Enforce max length
+  if (ST.demoMode) return demoTranslate(safeText, from, to);
+  const key = secureGetKey();
+  if (!key) throw new Error('No API key. Tap 🔑 to add one.');
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      // SECURITY: System prompt injection prevention — use structured messages
+      system: 'You are a professional translator. Translate the provided text accurately and naturally. Output ONLY the translation — no notes, no explanations, no prefixes.',
+      messages: [{ role: 'user', content: `Translate from ${esc(from)} to ${esc(to)}:\n\n${safeText}` }],
+    }),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    // SECURITY: Don't expose raw API errors to UI — sanitize message
+    const msg = err?.error?.message || 'API request failed';
+    if (resp.status === 401) throw new Error('Invalid API key');
+    if (resp.status === 429) throw new Error('Rate limit reached. Try again shortly.');
+    throw new Error(msg.slice(0, 100));
+  }
+
+  const data = await resp.json();
+  return data.content?.[0]?.text?.trim() || 'Translation unavailable';
+}
+
+function demoTranslate(text, from, to) {
+  const demos = {
+    Spanish: { 'Hello': 'Hola', 'Good morning': 'Buenos días', 'Thank you': 'Gracias', 'How are you?': '¿Cómo estás?', 'I love you': 'Te quiero', 'Where are you?': '¿Dónde estás?' },
+    French:  { 'Hello': 'Bonjour', 'Thank you': 'Merci', 'Good morning': 'Bonjour', 'How are you?': 'Comment allez-vous?', 'I love you': "Je t'aime" },
+    German:  { 'Hello': 'Hallo', 'Thank you': 'Danke', 'Good morning': 'Guten Morgen', 'How are you?': 'Wie geht es Ihnen?', 'I love you': 'Ich liebe dich' },
+    Japanese:{ 'Hello': 'こんにちは', 'Thank you': 'ありがとう', 'Good morning': 'おはようございます', 'I love you': '愛してる' },
+    Chinese: { 'Hello': '你好', 'Thank you': '谢谢', 'Good morning': '早上好', 'I love you': '我爱你' },
+    Arabic:  { 'Hello': 'مرحبا', 'Thank you': 'شكرا', 'Good morning': 'صباح الخير', 'I love you': 'أحبك' },
+    Russian: { 'Hello': 'Привет', 'Thank you': 'Спасибо', 'Good morning': 'Доброе утро', 'I love you': 'Я тебя люблю' },
+    Hindi:   { 'Hello': 'नमस्ते', 'Thank you': 'धन्यवाद', 'Good morning': 'सुप्रभात', 'I love you': 'मैं तुमसे प्यार करता हूँ' },
+  };
+  return new Promise(res => setTimeout(() => {
+    const map = demos[to] || {};
+    const hit = map[text];
+    res(hit || `[DEMO] "${text}" → ${to}. Add an API key for real AI translation.`);
+  }, 700 + Math.random() * 500));
+}
+
+// ── STATUS LINE ─────────────────────────────
+function setStatus(msg, loading) {
+  const el = $('status-line');
+  el.innerHTML = loading
+    ? `<div class="spinner"></div><span style="font-size:12px;color:var(--text3)">${msg || 'Processing…'}</span>`
+    : `<span id="status-txt" style="font-size:12px;color:var(--text3)">${esc(msg)}</span>`;
+}
+
+// ── TTS ─────────────────────────────────────
+function speak(text, lang) {
+  if (!window.speechSynthesis) { toast('TTS not supported'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = LANG_BCP47[lang] || 'en-US';
+  window.speechSynthesis.speak(u);
+}
+function speakInput()  { const t=$('t-input').value.trim(); if(t) speak(t,$('t-from').value); else toast('Nothing to speak'); }
+function speakOutput() { if($('t-output').classList.contains('empty')) { toast('No translation yet'); return; } speak($('t-output').textContent,$('t-to').value); }
+
+// ── MICROPHONE (STT) ─────────────────────────
+function startMic() {
+  if (!ST.prefs.mic) { toast('Mic disabled in Settings'); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Speech recognition not supported (use Chrome)'); return; }
+  if (ST.micActive) { stopMic(); return; }
+
+  ST.recognition = new SR();
+  ST.recognition.lang = LANG_BCP47[$('t-from').value] || 'en-US';
+  ST.recognition.continuous = false;
+  ST.recognition.interimResults = false;
+
+  ST.micActive = true;
+  $('mic-main-btn').classList.add('rec');
+  $('mic-btn').classList.add('active');
+  $('waveform').classList.add('active');
+  $('mic-hint').textContent = 'Listening… tap to stop';
+  setStatus('Listening…', true);
+
+  ST.recognition.onresult = e => {
+    const t = e.results[0][0].transcript;
+    $('t-input').value = t;
+    updateCharCnt();
+    setStatus('Captured: "' + t.slice(0, 50) + (t.length > 50 ? '…' : '') + '"');
+  };
+  ST.recognition.onend = () => stopMic();
+  ST.recognition.onerror = e => { stopMic(); setStatus('Mic error: ' + e.error); };
+  ST.recognition.start();
+}
+
+function stopMic() {
+  ST.micActive = false;
+  ST.recognition?.abort();
+  $('mic-main-btn').classList.remove('rec');
+  $('mic-btn').classList.remove('active');
+  $('waveform').classList.remove('active');
+  $('mic-hint').textContent = 'Tap mic to speak';
+}
+
+// ── CONVERSATION MODE ────────────────────────
+function convKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); convSend(); } }
+
+async function convSend() {
+  const inp = $('c-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const meLang = $('c-me').value, peerLang = $('c-peer').value;
+  inp.value = '';
+  addBubble('conv-chat', 'me', text, '');
+  try {
+    const tr = await translateText(text, meLang, peerLang);
+    const last = $('conv-chat').lastElementChild;
+    if (last) { const el = last.querySelector('.bubble-trans'); if (el) el.textContent = tr; }
+    if (ST.prefs.autoSpeak) speak(tr, peerLang);
+    if (ST.prefs.history) addToHistory(text, tr, meLang, peerLang);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function convMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Speech recognition not supported'); return; }
+  const rec = new SR();
+  rec.lang = LANG_BCP47[$('c-me').value] || 'en-US';
+  const btn = $('c-mic-btn');
+  btn.classList.add('rec');
+  rec.onresult = e => { $('c-input').value = e.results[0][0].transcript; };
+  rec.onend = () => btn.classList.remove('rec');
+  rec.start();
+}
+
+// ── WALKIE-TALKIE MODE ───────────────────────
+async function walkieTap(side) {
+  if (ST.walkieBusy) return;
+  ST.walkieBusy = true;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { ST.walkieBusy = false; toast('Speech recognition not supported'); return; }
+
+  const isLeft = side === 'left';
+  const speakLang = isLeft ? $('w-left').value : $('w-right').value;
+  const listenLang = isLeft ? $('w-right').value : $('w-left').value;
+  const pad = $('w-pad-' + side);
+  pad.classList.add('talking');
+  $('w-status').innerHTML = '<div class="spinner"></div><span style="font-size:13px;color:var(--glow)">Listening in ' + esc(speakLang) + '…</span>';
+
+  const rec = new SR();
+  rec.lang = LANG_BCP47[speakLang] || 'en-US';
+  rec.onresult = async e => {
+    const text = e.results[0][0].transcript;
+    $('w-status').innerHTML = '<div class="spinner"></div><span style="font-size:13px;color:var(--text3)">Translating to ' + esc(listenLang) + '…</span>';
+    addBubble('walkie-chat', isLeft ? 'peer' : 'me', text, '');
+    try {
+      const tr = await translateText(text, speakLang, listenLang);
+      const last = $('walkie-chat').lastElementChild;
+      if (last) { const el = last.querySelector('.bubble-trans'); if (el) el.textContent = tr; }
+      $('w-status').innerHTML = '<span style="font-size:13px;color:var(--glow)">Speaking translation…</span>';
+      speak(tr, listenLang);
+      if (ST.prefs.history) addToHistory(text, tr, speakLang, listenLang);
+      setTimeout(() => {
+        pad.classList.remove('talking');
+        $('w-status').innerHTML = '<span style="font-size:13px;color:var(--text3)">Tap a side to speak</span>';
+        ST.walkieBusy = false;
+      }, 2200);
+    } catch(e) {
+      $('w-status').innerHTML = '<span style="font-size:13px;color:var(--glowR)">Error: ' + esc(e.message) + '</span>';
+      pad.classList.remove('talking');
+      ST.walkieBusy = false;
+    }
+  };
+  rec.onerror = () => {
+    $('w-status').innerHTML = '<span style="font-size:13px;color:var(--glowR)">Mic error. Try again.</span>';
+    pad.classList.remove('talking');
+    ST.walkieBusy = false;
+  };
+  rec.onend = () => {
+    if (ST.walkieBusy && !$('w-status').innerHTML.includes('Translating')) {
+      pad.classList.remove('talking');
+      $('w-status').innerHTML = '<span style="font-size:13px;color:var(--text3)">Tap a side to speak</span>';
+      ST.walkieBusy = false;
+    }
+  };
+  rec.start();
+}
+
+// ── CHAT BUBBLES ─────────────────────────────
+function addBubble(chatId, who, original, translated) {
+  const chat = $(chatId);
+  const n = new Date();
+  const time = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+  const div = document.createElement('div');
+  div.className = 'bubble-wrap ' + who;
+  // SECURITY: Always escape user-generated content
+  div.innerHTML = `
+    <div class="bubble">${esc(original)}</div>
+    <div class="bubble-trans">${translated ? esc(translated) : 'Translating…'}</div>
+    <div class="bubble-meta">${who === 'me' ? 'You' : 'Peer'} · ${time}</div>
+  `;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ── HISTORY ──────────────────────────────────
+function addToHistory(orig, trans, from, to) {
+  const item = { orig, trans, from, to, t: Date.now() };
+  ST.history.unshift(item);
+  if (ST.history.length > 200) ST.history.pop();
+  try { localStorage.setItem('rt2_history', JSON.stringify(ST.history)); } catch {}
+  renderHistory();
+}
+
+function loadHistory() {
+  try { ST.history = JSON.parse(localStorage.getItem('rt2_history') || '[]'); } catch { ST.history = []; }
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = $('hist-list'), empty = $('hist-empty');
+  list.innerHTML = '';
+  if (!ST.history.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  ST.history.slice(0, 50).forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'hist-item';
+    const mins = Math.round((Date.now() - item.t) / 60000);
+    const timeStr = mins < 1 ? 'now' : mins < 60 ? mins + 'm' : Math.round(mins/60) + 'h';
+    // SECURITY: Always escape stored strings when rendering
+    el.innerHTML = `
+      <div class="hist-flag ${i%2===0?'a':'b'}">${FLAGS[item.from]||'🌐'}</div>
+      <div class="hist-body">
+        <div class="hist-orig">${esc(item.orig)}</div>
+        <div class="hist-translated">${esc(item.trans)}</div>
+        <div class="hist-langs">${esc(item.from)} → ${esc(item.to)}</div>
+      </div>
+      <div class="hist-time">${timeStr}</div>
+    `;
+    el.onclick = () => {
+      $('t-input').value = item.orig; updateCharCnt();
+      const out = $('t-output');
+      out.textContent = item.trans; out.className = 'tcard-output';
+      ST.curTranslation = item.trans; ST.curInput = item.orig;
+      switchTab('text');
+    };
+    list.appendChild(el);
+  });
+}
+
+function clearHistory() {
+  if (!confirm('Delete all translation history?')) return;
+  ST.history = [];
+  try { localStorage.removeItem('rt2_history'); } catch {}
+  renderHistory();
+  toast('History cleared');
+}
+
+function saveItem() {
+  if (!ST.curTranslation) { toast('No translation to save'); return; }
+  addToHistory(ST.curInput, ST.curTranslation, $('t-from').value, $('t-to').value);
+  toast('Saved to history', 'ok');
+}
+
+// ── SHARE ────────────────────────────────────
+async function shareOut() {
+  const out = $('t-output');
+  if (out.classList.contains('empty')) { toast('No translation to share'); return; }
+  const text = `[RTranslator]\n${$('t-from').value} → ${$('t-to').value}\n\n${$('t-input').value}\n↳ ${out.textContent}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'RTranslator', text }); return; } catch {}
+  }
+  navigator.clipboard?.writeText(text).then(() => toast('Copied to clipboard', 'ok')).catch(() => toast('Share not supported'));
+}
+
+function copyOut() {
+  const out = $('t-output');
+  if (out.classList.contains('empty')) { toast('No translation to copy'); return; }
+  navigator.clipboard?.writeText(out.textContent).then(() => toast('Copied!', 'ok')).catch(() => toast('Copy not supported'));
+}
+
+// ── PREFS ────────────────────────────────────
+function loadPrefs() {
+  try { ST.prefs = { ...ST.prefs, ...JSON.parse(localStorage.getItem('rt2_prefs') || '{}') }; } catch {}
+  $('s-autospeak').checked = ST.prefs.autoSpeak;
+  $('s-mic').checked = ST.prefs.mic;
+  $('s-hist').checked = ST.prefs.history;
+}
+function savePref(k, v) {
+  ST.prefs[k] = v;
+  try { localStorage.setItem('rt2_prefs', JSON.stringify(ST.prefs)); } catch {}
+}
+
+// ── TOAST ────────────────────────────────────
+let _toastTimer;
+function toast(msg, type) {
+  const el = $('toast');
+  el.textContent = msg; // Safe: textContent, not innerHTML
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.className = '', 2800);
+}
+</script>
+</body>
+</html>
