@@ -3,7 +3,6 @@
 <div align="center">
 
 ![RTranslator Banner](https://img.shields.io/badge/RTranslator-v2.0-00e5b0?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTUgOGw2IDYiLz48cGF0aCBkPSJNNCAxNGw2LTYgMi0zIi8+PHBhdGggZD0iTTIgNWgxMiIvPjxwYXRoIGQ9Ik03IDJoMSIvPjxwYXRoIGQ9Ik0yMiAyMmwtNS0xMC01IDEwIi8+PHBhdGggZD0iTTE0IDE4aDYiLz48L3N2Zz4=)
-![License](https://img.shields.io/badge/License-MIT-3d8bff?style=for-the-badge)
 ![Languages](https://img.shields.io/badge/Languages-16%2B-00e5b0?style=for-the-badge)
 ![AI](https://img.shields.io/badge/AI-Claude%20Sonnet-purple?style=for-the-badge)
 
