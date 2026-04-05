@@ -58,29 +58,25 @@ CipherCraft Pro is a **Flask-based web application** that provides secure text a
 ## 🏗 Project Structure
 
 ```
-CipherCraft-Pro/
+CipherCraft/
 │
-├── app.py
-├── database.db
-├── requirements.txt
-├── Procfile
+├── app.py                  # Main Flask application (backend)
+├── requirements.txt        # Dependencies for Flask app
+├── Procfile                # Render deployment configuration
+├── readme.md               # Project documentation
 │
-├── templates/
-│   ├── login.html
-│   ├── register.html
-│   ├── dashboard.html
+├── templates/              # HTML files for rendering
+│   ├── login.html          # User login page
+│   ├── register.html       # User registration page
+│   └── dashboard.html      # Main dashboard page (includes encryption UI, history, etc.)
 │
-├── static/
-│   └── (optional CSS/JS files)
+├── utils/                  # Utility files for encryption and steganography
+│   ├── crypto.py           # Functions for AES, Caesar cipher
+│   └── steganography.py    # Functions for encoding/decoding hidden messages in images
 │
-├── utils/
-│   ├── crypto.py
-│   ├── steganography.py
-│
-└── uploads/
+└── uploads/                # Folder to store encrypted files, images, and AES keys
+    └── (empty initially, files are saved dynamically)
 ```
-
----
 
 ## ⚙️ Installation
 
