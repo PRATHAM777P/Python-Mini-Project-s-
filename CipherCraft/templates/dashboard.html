@@ -1,1 +1,15 @@
-
+<div class="card mt-4 p-3 shadow">
+    <h4>📜 History</h4>
+    <table class="table table-striped">
+        <tr>
+            <th>Type</th>
+            <th>Result</th>
+        </tr>
+        {% for h in history %}
+        <tr>
+            <td>{{ h[0] }}</td>
+            <td>{{ h[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
