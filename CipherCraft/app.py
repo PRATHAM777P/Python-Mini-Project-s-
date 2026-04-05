@@ -1,9 +1,12 @@
+# app.py
+
 from flask import Flask, render_template, request, redirect, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 from utils.crypto import encrypt_aes, decrypt_aes, generate_key, caesar_encrypt, caesar_decrypt
 from utils.steganography import encode_image, decode_image
+from cryptography.fernet import Fernet
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -89,7 +92,7 @@ def dashboard():
 
             conn = sqlite3.connect("database.db")
             c = conn.cursor()
-            c.execute("INSERT INTO history(user,action,result) VALUES (?,?,?)", (session["user"], mode, result))
+            c.execute("INSERT INTO history(user, action, result) VALUES (?,?,?)", (session["user"], mode, result))
             conn.commit()
             conn.close()
 
