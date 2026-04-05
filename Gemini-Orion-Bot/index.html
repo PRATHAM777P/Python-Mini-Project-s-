@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini-Orion-Bot | Your AI Assistant</title>
+
+    <!-- Google Material Symbols (Rounded) -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+
+        <header class="app-header">
+            <h1 class="heading">Hello, there!</h1>
+            <h2 class="sub-heading">How can Gemini-Orion-Bot assist you today?</h2>
+        </header>
+
+        <ul class="suggestions" aria-label="Suggested prompts">
+            <li class="suggestions-item">
+                <p class="text">Design a home office setup for productivity and comfort $500.</p>
+                <span class="material-symbols-rounded">draw</span>
+            </li>
+            <li class="suggestions-item">
+                <p class="text">How can I level up my web development expertise in 2025?</p>
+                <span class="material-symbols-rounded">lightbulb</span>
+            </li>
+            <li class="suggestions-item">
+                <p class="text">Suggest some useful tools for debugging JavaScript code.</p>
+                <span class="material-symbols-rounded">explore</span>
+            </li>
+            <li class="suggestions-item">
+                <p class="text">Create a React JS component for a simple todo list app.</p>
+                <span class="material-symbols-rounded">code</span>
+            </li>
+        </ul>
+
+        <div class="chat-container">
+            <ul class="chat-messages" id="chat-messages">
+                <!-- Chat messages will be dynamically added here -->
+            </ul>
+        </div>
+
+        <div class="prompt-container">
+            <div class="prompt-wrapper">
+                <form action="#" class="prompt-form" id="prompt-form">
+                    <input type="text" class="prompt-input" placeholder="Ask Gemini-Orion-Bot..." aria-label="Type your message here" required>
+                    <div class="prompt-actions">
+                        <button type="button" id="add-file-btn" class="material-symbols-rounded" aria-label="Attach file">
+                            attach_file
+                        </button>
+                        <button type="submit" id="send-prompt-btn" class="material-symbols-rounded" aria-label="Send message">
+                            arrow_upward
+                        </button>
+                    </div>
+                </form>
+
+                <div class="extra-actions">
+                    <button id="theme-toggle-btn" class="material-symbols-rounded" aria-label="Toggle light/dark mode">
+                        light_mode
+                    </button>
+                    <button id="delete-chats-btn" class="material-symbols-rounded" aria-label="Delete chats">
+                        delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Main JS -->
+    <script src="script.js"></script>
+</body>
+</html>
