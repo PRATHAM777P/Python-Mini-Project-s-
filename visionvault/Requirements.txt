@@ -1,0 +1,5 @@
+chromadb
+requests
+numpy
+pillow
+certifi
