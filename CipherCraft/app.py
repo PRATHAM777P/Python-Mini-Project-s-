@@ -2,6 +2,7 @@
 
 from flask import Flask, render_template, request, redirect, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sqlite3
 import os
 from utils.crypto import encrypt_aes, decrypt_aes, generate_key, caesar_encrypt, caesar_decrypt
@@ -158,7 +159,15 @@ def encode():
 def decode():
     file = request.files["image"]
 
-    path = os.path.join("uploads", file.filename)
+    upload_root = os.path.abspath("uploads")
+    filename = secure_filename(file.filename)
+    if not filename:
+        return render_template("dashboard.html", steg_result="Error: Invalid filename.")
+
+    path = os.path.abspath(os.path.join(upload_root, filename))
+    if os.path.commonpath([upload_root, path]) != upload_root:
+        return render_template("dashboard.html", steg_result="Error: Invalid file path.")
+
     file.save(path)
 
     msg = decode_image(path)
