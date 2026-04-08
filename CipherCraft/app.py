@@ -149,7 +149,16 @@ def encrypt_file():
 # Route for downloading encrypted files
 @app.route("/download/<path:filename>")
 def download_file(filename):
-    return send_file(filename, as_attachment=True)
+    download_root = os.path.abspath("uploads")
+    safe_path = os.path.abspath(os.path.join(download_root, filename))
+
+    if os.path.commonpath([download_root, safe_path]) != download_root:
+        return "Invalid file path", 400
+
+    if not os.path.isfile(safe_path):
+        return "File not found", 404
+
+    return send_file(safe_path, as_attachment=True)
 
 # Steganography routes (encode & decode)
 @app.route("/encode", methods=["POST"])
