@@ -149,7 +149,15 @@ def encode():
     file = request.files["image"]
     msg = request.form["secret"]
 
-    path = os.path.join("uploads", file.filename)
+    filename = secure_filename(file.filename)
+    if not filename:
+        return render_template("dashboard.html", steg_result="Error: Invalid filename")
+
+    upload_root = os.path.abspath("uploads")
+    path = os.path.abspath(os.path.join(upload_root, filename))
+    if os.path.commonpath([upload_root, path]) != upload_root:
+        return render_template("dashboard.html", steg_result="Error: Invalid upload path")
+
     file.save(path)
 
     output = encode_image(path, msg)
