@@ -118,7 +118,15 @@ def encrypt_file():
 
     try:
         file = request.files["file"]
-        filepath = os.path.join("uploads", file.filename)
+        filename = secure_filename(file.filename)
+        if not filename:
+            raise ValueError("Invalid file name")
+
+        upload_root = os.path.abspath("uploads")
+        filepath = os.path.abspath(os.path.join(upload_root, filename))
+        if os.path.commonpath([upload_root, filepath]) != upload_root:
+            raise ValueError("Invalid file path")
+
         file.save(filepath)
 
         key = generate_key()
