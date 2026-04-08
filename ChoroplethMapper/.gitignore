@@ -1,0 +1,145 @@
+# ============================================================
+#  .gitignore — ChoroplethMapper
+#  Python data-visualisation project with CSV datasets
+# ============================================================
+
+
+# ── Python runtime ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ── Virtual environments ──────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env/
+.ENV/
+Pipfile.lock
+poetry.lock
+
+# ── Distribution / packaging ──────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# ── Environment & secrets ─────────────────────────────────────
+.env
+.env.*
+!.env.example        # keep the example template
+*.pem
+*.key
+secrets.py
+config_local.py
+
+# ── Jupyter / IPython ─────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+profile_default/
+ipython_config.py
+
+# ── Data files — raw / downloaded / generated ─────────────────
+# Keep the committed sample CSVs (covid.csv, population.csv,
+# temperature.csv) but ignore anything auto-downloaded or large.
+data/raw/
+data/processed/
+data/cache/
+*.parquet
+*.feather
+*.hdf
+*.h5
+*.pkl
+*.pickle
+*.sqlite
+*.db
+
+# Large or auto-fetched CSVs (keep the repo's committed ones)
+*_raw.csv
+*_processed.csv
+*_cache.csv
+*_full.csv
+*_download.csv
+downloaded_*.csv
+fetched_*.csv
+
+# ── Map / GeoJSON output ──────────────────────────────────────
+output/
+exports/
+generated/
+*.geojson.bak
+*_generated.geojson
+
+# ── HTML / rendered map output ────────────────────────────────
+# Folium, Plotly, and similar tools write standalone HTML files
+*.html
+!templates/*.html     # keep any hand-written templates
+
+# ── Image exports ─────────────────────────────────────────────
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.pdf
+!docs/**/*.png        # keep documentation screenshots
+!assets/**/*.png
+
+# ── Logs & temporary files ────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Test & coverage artefacts ─────────────────────────────────
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+nosetests.xml
+test-results/
+junit.xml
+
+# ── Type-checking & linting caches ───────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pylint.d/
+.pytype/
+
+# ── IDEs & editors ────────────────────────────────────────────
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.spyderproject.cfg
+.spyproject/
+.ropeproject/
+*.code-workspace
+
+# ── OS artefacts ──────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
