@@ -44,26 +44,6 @@ Practical utilities: password generators, calculators, converters, CLI tools, an
 
 ---
 
-## 🗂️ Repository Structure
-
-```
-mini-projects/
-├── python/
-│   ├── beginner/
-│   ├── intermediate/
-│   └── advanced/
-├── javascript/
-│   ├── frontend/
-│   └── node/
-├── data-analysis/
-├── nlp/
-├── ai-ml/
-├── games/
-├── apis-web-scraping/
-├── automation/
-└── tools-utilities/
-```
-
 Each project folder typically contains:
 - `README.md` — project description, usage instructions, and screenshots (where applicable)
 - Source code files
