@@ -205,4 +205,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").strip().lower() in ("1", "true", "yes")
+    app.run(debug=debug_mode)
